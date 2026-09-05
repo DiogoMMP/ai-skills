@@ -1,0 +1,135 @@
+---
+name: knowledge-base
+description: Scaffold a personal LLM-driven knowledge base — either a Karpathy-style research KB (raw/ sources + compiled wiki/) or a lighter code-repo KB (wiki/ fed by notes/ + git history), optionally linked to a shared general vault. Use when the user wants to set up a new wiki/knowledge-base project, a decision log for a personal code repo, or mentions building a personal knowledge base with Obsidian.
+allowed-tools: Write, Read, Bash(mkdir *), Bash(ln -s *), Bash(cmd /c mklink *), PowerShell(New-Item *), PowerShell(Test-Path *), AskUserQuestion
+---
+
+# Knowledge Base scaffolding
+
+Sets up a personal knowledge base wiki, in one of two modes:
+
+- **research** — Andrej Karpathy's
+  ["LLM Knowledge Bases"](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
+  setup: heterogeneous external sources land in `raw/`, an LLM incrementally compiles them into
+  `wiki/`. Good when there's a real body of external material to ingest (papers, articles,
+  datasets, repos).
+- **code** — lighter setup for a personal code repo: no `raw/`. The wiki is built directly from
+  your own scratch notes (`notes/`) and the repo's git history via the `compile-wiki` skill.
+  Good when you *are* the source material and just want decisions/context to survive past your
+  own memory, without team-knowledge-sharing overhead you don't need.
+
+In both modes, `wiki/` is meant to be edited by the LLM, not by hand — Obsidian (or any markdown
+viewer) is just the frontend for viewing it.
+
+## Steps
+
+1. **Ask which mode.** Ask the user: research-style KB (raw/ + wiki/) or code-repo KB (wiki/ +
+   notes/, no raw/)? Don't guess — the two produce different structures and `KB_GUIDE.md`
+   content.
+
+2. **Ask where to create it.** Ask which directory the knowledge base should be created in.
+   Offer sensible options: the current directory, or a new subdirectory (ask for its name —
+   suggest one derived from the topic if the user has mentioned one). Always confirm the target
+   path before creating anything.
+
+3. **Ask for a topic/title** if it isn't already obvious from the conversation (e.g. "AI safety
+   research", "this repo's name"). Used as the title in `wiki/index.md` and `KB_GUIDE.md`. A
+   generic placeholder is fine if the user has no topic yet.
+
+4. **Create the structure** under the target directory, branching on mode:
+
+   **research mode:**
+
+   ```
+   <target>/
+   ├── raw/
+   │   └── README.md
+   ├── wiki/
+   │   ├── README.md
+   │   └── index.md
+   ├── outputs/
+   │   └── README.md
+   ├── tools/
+   │   └── README.md
+   └── KB_GUIDE.md
+   ```
+
+   - Copy `templates/raw-README.md` → `<target>/raw/README.md`
+   - Copy `templates/wiki-README.md` → `<target>/wiki/README.md`
+   - Copy `templates/wiki-index.md` → `<target>/wiki/index.md`, replacing `{{TOPIC}}` and
+     `{{DATE}}`
+   - Copy `templates/outputs-README.md` → `<target>/outputs/README.md`
+   - Copy `templates/tools-README.md` → `<target>/tools/README.md`
+   - Copy `templates/KB_GUIDE.md` → `<target>/KB_GUIDE.md`, replacing `{{TOPIC}}` and `{{DATE}}`
+     (this template's frontmatter sets `mode: research`)
+
+   **code mode:**
+
+   ```
+   <target>/
+   ├── wiki/
+   │   ├── README.md
+   │   └── index.md
+   ├── notes/
+   │   └── README.md
+   └── KB_GUIDE.md
+   ```
+
+   - Copy `templates/code-wiki-README.md` → `<target>/wiki/README.md`
+   - Copy `templates/code-wiki-index.md` → `<target>/wiki/index.md`, replacing `{{TOPIC}}` and
+     `{{DATE}}`
+   - Copy `templates/notes-README.md` → `<target>/notes/README.md`
+   - Copy `templates/code-KB_GUIDE.md` → `<target>/KB_GUIDE.md`, replacing `{{TOPIC}}` and
+     `{{DATE}}` (this template's frontmatter sets `mode: code` and leaves `last_compiled_at`
+     and `domain_model` empty — `compile-wiki` fills in the former on its first run)
+
+   Either way: if the target directory is inside a git repo, do not create a `.gitignore` unless
+   asked — just leave the `README.md` files as the thing that keeps otherwise-empty folders
+   tracked.
+
+5. **Code mode only: ask about a domain model.** Ask the user whether the project has a domain
+   model worth documenting (e.g. DDD entities, an ORM schema, an ER diagram, a class diagram).
+   If yes, ask where it lives — a path to the entity/model files or folder, or a diagram file —
+   or a short description if there's nothing to point at yet. Record whatever they give you in
+   `KB_GUIDE.md`'s `domain_model` frontmatter field (a path, list of paths, or free text; leave
+   it empty if they say no). This only needs asking once — `compile-wiki` reads it on every run
+   to keep the structure overview current. Skip this step entirely in research mode.
+
+6. **Ask about linking to a general/shared vault.** Ask the user whether this KB should link
+   into a general/shared Obsidian vault, so both show up in the same graph. If they decline or
+   don't have one, skip to step 7.
+
+   If they want a link:
+   - Ask for the path to the general vault.
+   - If nothing exists at that path yet, offer to bootstrap it first by running steps 1–4 of
+     this same skill against that path (topic: something like "Geral" or whatever the user calls
+     it — research or code mode, whichever fits how they'll use it). Confirm with the user
+     before creating it.
+   - Verify the general vault has a `wiki/` directory, then create a directory link named
+     `_geral` inside the project's `wiki/`, pointing at the general vault's `wiki/`:
+     - **Windows**: `cmd /c mklink /J "<target>\wiki\_geral" "<general-vault>\wiki"` (via Bash),
+       or `New-Item -ItemType Junction -Path "<target>\wiki\_geral" -Target "<general-vault>\wiki"`
+       (via PowerShell). Junctions don't need Developer Mode or admin rights, unlike symlinks.
+     - **macOS/Linux**: `ln -s "<general-vault>/wiki" "<target>/wiki/_geral"`.
+   - Confirm the link resolves (list `<target>/wiki/_geral` and check it shows the general
+     vault's contents) before reporting success.
+   - Append a short note to the project's `KB_GUIDE.md` recording that `wiki/_geral/` is a
+     linked, read-only reference into the general vault — content there is maintained by the
+     general vault's own compile step, never written to from this project.
+
+7. **Report back**: show the resulting tree, briefly explain each folder for the mode chosen,
+   and point at `KB_GUIDE.md` for the full workflow. If a general-vault link was created,
+   mention it too. In code mode, mention that the first `compile-wiki` run will generate
+   `wiki/Estrutura.md`, a structure overview kept fresh on every run.
+
+## Notes
+
+- Never write directly into `wiki/` as "the answer" to a one-off question. In research mode
+  that's what `outputs/` is for; only promote content into `wiki/` when it's meant to durably
+  enhance the knowledge base. Code mode has no `outputs/` — there's no one-off Q&A rendering
+  step, so this mostly doesn't come up.
+- Keep source material read-only in spirit: `raw/` (research mode) is never edited by the LLM;
+  `notes/` (code mode) has its frontmatter status updated by `compile-wiki` but its written
+  content is never rewritten.
+- `wiki/_geral/` (when linked) is likewise read-only from this project's point of view: it's a
+  directory link, not a copy, so edits made there would actually land in the general vault.
