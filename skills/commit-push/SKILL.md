@@ -1,6 +1,6 @@
 ---
 name: commit-push
-description: "Create git commits (and optionally push) following a GitFlow-style branching strategy for personal projects. Writes Conventional Commits messages, ALWAYS shows the full proposed message(s) to the user and waits for explicit validation before committing, and ALWAYS asks separately before pushing. Use whenever the user wants to commit, stage and commit, split work into commits, write a commit message, or push — e.g. 'commit', 'commit this', 'faz commit', 'commit e push', 'commita as alterações', 'push', 'write the commit message', 'guarda isto no git'. Also use when finishing a task and the user asks to save the work to git."
+description: "Create git commits (and optionally push) following a GitFlow-style branching strategy for personal projects. Checks whether the change warrants a version bump (package.json, a .csproj, pyproject.toml, plugin.json, etc. — skipped entirely when the repo already versions automatically via semantic-release/GitVersion/MinVer/etc.) before writing Conventional Commits messages, ALWAYS shows the full proposed message(s) to the user and waits for explicit validation before committing, and ALWAYS asks separately before pushing. Use whenever the user wants to commit, stage and commit, split work into commits, write a commit message, or push — e.g. 'commit', 'commit this', 'faz commit', 'commit e push', 'commita as alterações', 'push', 'write the commit message', 'guarda isto no git'. Also use when finishing a task and the user asks to save the work to git."
 allowed-tools: ["Bash", "AskUserQuestion", "Read", "Grep", "Glob"]
 ---
 
@@ -129,7 +129,54 @@ to the user instead of staging it, and say so if `.gitignore` is missing an entr
 
 ---
 
-## Step 4 — Write the message(s)
+## Step 4 — Check whether a version bump belongs in this commit
+
+Not every commit bumps a version — most don't. Check before assuming either way.
+
+1. **Look for automatic versioning first.** If the repo already derives its version from git
+   tags/history, this skill does not touch a version field at all — a manual bump would fight the
+   tool. Evidence: `semantic-release` config (`.releaserc*`, `release.config.*`, a `release` key in
+   `package.json`), Changesets (`.changeset/config.json`), GitVersion (`GitVersion.yml`/`.yaml`),
+   MinVer or Nerdbank.GitVersioning (a `<PackageReference Include="MinVer"` / `"Nerdbank.GitVersioning"`
+   in a `.csproj`, or a `version.json`). If any of these are present, **skip this step entirely** —
+   don't ask, don't touch the version.
+
+2. **Otherwise, find the version-holding file(s)**, if any exist in this repo:
+   `package.json` (`version`), `*.csproj` / `Directory.Build.props` (`<Version>`, `<AssemblyVersion>`,
+   `<FileVersion>`), `pyproject.toml` (`[project] version` / `[tool.poetry] version`), `Cargo.toml`
+   (`[package] version`), `composer.json` (`version`), `gradle.properties` / `build.gradle*`
+   (`version`), `.claude-plugin/plugin.json` (`version`), a standalone `VERSION` file, or a
+   `CHANGELOG.md` with an `[Unreleased]` section (Keep a Changelog style) worth moving into a dated
+   one. If none of these exist, there's nothing to bump — move on without comment.
+
+3. **Decide whether this commit is the kind that bumps it.** Bumping usually belongs on a
+   `release/*` branch when cutting a release, or — for a small personal tool/plugin that versions
+   per meaningful change rather than per release — on any branch when the change is user-facing.
+   It usually does **not** belong on routine mid-development commits, docs-only changes, or refactors
+   with no externally visible effect; those wait for the release step.
+   - **On `release/*`** → ask. This is very likely the moment to bump.
+   - **Elsewhere** → only raise it when the diff is user-facing (a `feat`/`fix`, per the type you'll
+     use in Step 5) **and** the repo's own history shows it bumps per-commit rather than only on
+     release branches/tags (`git log -p -- <version file>` shows the pattern). If history is
+     inconclusive, or this would be the first commit ever touching that file, ask once rather than
+     guessing either way.
+
+4. **When asking, use `AskUserQuestion`.** Show the current version and offer patch / minor / major —
+   with a recommendation derived from the Conventional Commits type (`fix` → patch, `feat` → minor, a
+   `BREAKING CHANGE` footer or `!` → major) — plus "don't bump". Semver is a judgment call about the
+   actual change, not something to infer from a diff and apply silently.
+
+5. **If the user says bump:** update every file that holds this same version number, so they don't
+   drift — prefer the ecosystem's own bump command when one exists (`npm version --no-git-tag-version
+   <bump>`, `cargo set-version`, `poetry version <bump>`) over hand-editing, and hand-edit only where
+   no such command exists (e.g. a `.csproj`'s `<Version>`, or `.claude-plugin/plugin.json`). Decide
+   whether it's its own commit (`chore(release): bump version to X.Y.Z` — the norm when cutting a
+   release on `release/*`) or folded into the feature/fix commit it belongs to (when the project bumps
+   per-change), and say which and why when you show the proposal in Step 6.
+
+---
+
+## Step 5 — Write the message(s)
 
 ### Format
 
@@ -192,7 +239,7 @@ Co-authored-by: claude opus 5 <noreply@anthropic.com>     ← wrong casing
 
 ---
 
-## Step 5 — MESSAGE GATE: show and wait
+## Step 6 — MESSAGE GATE: show and wait
 
 Print the message(s) in chat **verbatim** — exactly the bytes that will land in git — in a fenced
 block per commit, each with the files it will stage:
@@ -215,7 +262,7 @@ proposal and wait again. Only an explicit approval ("ok", "sim", "avança", "com
 
 ---
 
-## Step 6 — Commit
+## Step 7 — Commit
 
 Stage exactly the files listed for each commit (`git add -- <paths>`), then commit each one with a
 heredoc so the message keeps its line breaks:
@@ -243,7 +290,7 @@ Rules:
 
 ---
 
-## Step 7 — PUSH GATE: ask, then push
+## Step 8 — PUSH GATE: ask, then push
 
 Never push implicitly. Ask with `AskUserQuestion`:
 
@@ -266,12 +313,14 @@ On no: confirm the commits are local, and give them the push command for later.
 
 ---
 
-## Step 8 — Report
+## Step 9 — Report
 
 Short and factual:
 
 - The commits created — `git log --oneline -N` output.
 - Branch, and whether it was pushed or is still local.
+- **Version**, if Step 4 changed one — old → new, which file(s), and whether it landed in its own
+  commit or folded into another. Say explicitly if you checked and decided **not** to bump, and why.
 - Anything left uncommitted on purpose (and why), or files you refused to stage.
 - If a PR is the next GitFlow step (`feature/*` → `develop`, `release/*` → `main`), mention it —
   but only open one if the user asks.
