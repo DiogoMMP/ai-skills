@@ -4,13 +4,16 @@ Plugin de [Claude Code](https://code.claude.com) com uma coleção pessoal de sk
 
 ## Instalação
 
+Localmente, durante desenvolvimento:
+
 ```bash
 claude --plugin-dir ./ai-skills
 ```
 
-Ou, depois de publicado numa marketplace:
+Ou a partir deste repositório, que é a sua própria marketplace:
 
 ```
+/plugin marketplace add DiogoMMP/ai-skills
 /plugin install ai-skills
 ```
 

@@ -1,0 +1,15 @@
+{
+  "name": "ai-skills",
+  "description": "Diogo Pereira's personal marketplace for the ai-skills Claude Code plugin.",
+  "owner": {
+    "name": "Diogo Pereira",
+    "email": "diogopereira812@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "ai-skills",
+      "source": "./",
+      "description": "Personal collection of Claude Code skills."
+    }
+  ]
+}
