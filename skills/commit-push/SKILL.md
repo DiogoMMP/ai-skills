@@ -197,10 +197,11 @@ Co-Authored-By: Claude <model> <noreply@anthropic.com>
   "changes requested in review").
 - **body** — optional; include it when the *why* isn't obvious from the subject. Explain intent,
   trade-offs, and anything a reviewer would otherwise have to ask. Skip it for trivial commits.
-- **Refs** — `Refs: #12` only when a GitHub issue number is derivable from the branch name (e.g.
-  `feature/12-dark-mode`) or the user gave one. Use `Closes: #12` only if the user says the issue is
-  done. This is optional, not a requirement — omit it entirely when there is no issue; never ask for
-  one just to fill this line.
+- **Refs** — check whether this change has an associated GitHub issue: derivable from the branch name
+  (e.g. `feature/12-dark-mode` → `#12`) or mentioned anywhere in the conversation. **If one exists, it
+  must be referenced** — `Refs: #12`, or `Closes: #12` only if the user says the issue is done; don't
+  drop a known issue silently. Only the *absence* of one is optional to leave as-is — never ask the
+  user to open an issue just to fill this line.
 - **language** — commit messages in **English**, always, regardless of the chat language, unless the
   repo's `git log` clearly shows otherwise.
 

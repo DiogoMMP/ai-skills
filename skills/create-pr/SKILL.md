@@ -129,12 +129,13 @@ Then `cat` it and treat its content as the **skeleton you must fill in**:
 
 ## Step 4 — Compose the title and body
 
-**Title** — Conventional Commits shape: `fix(auth): reject forged logout navigations`. When a related
-GitHub issue exists (derived from the branch slug, e.g. `feature/12-dark-mode`, or given by the
-user), reference it — in the title (`(#12)`) or, failing that, in the body. This is optional: don't
-block on it, and never ask the user to open an issue just to have something to reference. If the
-template's own checklist names a title pattern (e.g. `[tipo]: descrição curta`), follow **that**
-pattern instead. Imperative mood, no trailing period, ≤ 72 chars.
+**Title** — Conventional Commits shape: `fix(auth): reject forged logout navigations`. Check whether
+this change has an associated GitHub issue — derived from the branch slug (e.g. `feature/12-dark-mode`
+→ `#12`) or mentioned anywhere in the conversation. **If one exists, it must be referenced** — in the
+title (`(#12)`) or, failing that, in the body; don't drop a known issue silently. Only the *absence*
+of one is fine to leave as-is: never ask the user to open an issue just to have something to
+reference. If the template's own checklist names a title pattern (e.g. `[tipo]: descrição curta`),
+follow **that** pattern instead. Imperative mood, no trailing period, ≤ 72 chars.
 
 **Body language — Portuguese by default.** Write every word you add in Portuguese (pt-PT), regardless
 of the language of the chat, of the commit messages, or of the code — that's the default for this
