@@ -1,6 +1,6 @@
 ---
 name: implement-change
-description: "Implement a change — a feature, a bugfix, or a hotfix — end to end, in any project and any stack, and leave the written record the team expects. Accepts the request in ANY form — free text, an issue key or URL, a wiki page, a spec document, screenshots, a paste of a conversation, a mix — normalises it into evidence, determines the change type, then runs a fixed sequence: investigate → propose the plan in chat and WAIT for approval → write `docs/changes/<type>/<PREFIX><NNNN>-<slug>/README.md` (the spec, before any code) → implement → run the project's own verification gate → write `RESULT.md` (what actually happened, deviations included) → update that type's index → report. Both documents live in the same folder. It does NOT commit, push or open a PR — `commit-push` and `create-pr` do that. Use whenever the user wants a feature, bugfix or hotfix implemented, an issue implemented, or work planned-and-done with its record — e.g. 'implementa esta feature', 'corrige este bug com registo', 'faz este hotfix', 'implementa o ABC-123', 'implement this ticket', 'build this', 'quero acrescentar X'."
+description: "Implement a change — a feature, a bugfix, or a hotfix — end to end, in any project and any stack, and leave the written record the team expects. Accepts the request in ANY form — free text, an issue key or URL, a wiki page, a spec document, screenshots, a paste of a conversation, a mix — normalises it into evidence, determines the change type, then runs a fixed sequence: investigate → ask any open decisions → write the full plan directly as `docs/changes/<type>/<PREFIX><NNNN>-<slug>/README.md` (before any code) → show a short summary of it in chat (never the whole file) and WAIT for explicit approval of the plan before implementing → implement → run the project's own verification gate → write `RESULT.md` (what actually happened, deviations included) → update that type's index → report. Both documents live in the same folder. It does NOT commit, push or open a PR — `commit-push` and `create-pr` do that. Use whenever the user wants a feature, bugfix or hotfix implemented, an issue implemented, or work planned-and-done with its record — e.g. 'implementa esta feature', 'corrige este bug com registo', 'faz este hotfix', 'implementa o ABC-123', 'implement this ticket', 'build this', 'quero acrescentar X'."
 ---
 
 # Implement Change — plan, build, record
@@ -171,20 +171,21 @@ area the change will touch.
 
 ---
 
-## Phase 2 — PLAN GATE: propose, wait, then write the README
+## Phase 2 — Ask, draft the plan as the README, then gate on it
 
-**Mandatory for every change, feature, bugfix or hotfix alike.** A change always gets a plan, and the
-plan always gets approved before any code — urgency shortens how long you spend on it, never whether
-it happens.
+**Mandatory for every change, feature, bugfix or hotfix alike.** A change always gets a written plan,
+and the plan always gets approved **before any code** — urgency shortens how long you spend on it,
+never whether it happens.
 
-**First, in chat — short enough to read on one screen:** the situation, what you intend to change and
-where, what you deliberately will not touch, and every decision you need from the user. Use
-`AskUserQuestion` for the decisions, one at a time, each with a recommendation and its trade-off.
+1. **Resolve every open decision first.** Use `AskUserQuestion`, one decision at a time, each with a
+   recommendation and its trade-off — which component, behaviour on conflict, whether an existing
+   interface changes or a new one appears. **Do not touch code while a question is open.** Don't draft
+   the README around a guess when a real decision is still open.
 
-**Wait for approval. Do not touch code while a question is open.**
-
-Once approved, write `docs/changes/<type>/<PREFIX><NNNN>-<slug>/README.md` — the full spec behind the
-summary that was just approved.
+2. **Write the full `docs/changes/<type>/<PREFIX><NNNN>-<slug>/README.md` directly — this *is* the
+   plan**, not a chat summary standing in for it. Fill in every section below with the decisions just
+   made. It's a draft until the gate in step 3 approves it, so it's fine to revise it in place if the
+   user asks for changes before that.
 
 **Where the structure comes from**, in order of preference:
 
@@ -221,9 +222,19 @@ to whatever the project's existing records use.
 > the shared abstraction — then the code that consumes it, then the tests. `commit-push` carries the
 > full mechanics; §6 just has to give it units small enough to work with.
 
-> **The README is the spec as approved.** After implementation you do **not** rewrite it to match
-> what happened. Deviations go in `RESULT.md`. A README edited after the fact stops being a plan and
-> becomes a second, tidier RESULT.
+3. **PLAN GATE — show a summary, point at the file, wait.** Post in chat a short summary that fits on
+   one screen: the situation, the key decisions and why, what's deliberately out of scope, and the
+   record's file path. **Do not paste the whole README into chat** — say the full plan is in that file
+   if the user wants to read it in detail. Then ask for explicit approval with `AskUserQuestion` and
+   **end the turn. Do not start Phase 3 while this is open**, and do not touch any code.
+
+4. **Accept edits.** If the user asks to change the plan — from the summary alone, or after opening
+   the file — revise the README itself (it's still a draft) and re-show an updated summary. Only an
+   explicit approval ("ok", "sim", "avança", "implementa") opens the gate to Phase 3.
+
+> **Once approved, the README is the spec as approved.** From that point on you do **not** rewrite it
+> to match what happened during implementation. Deviations go in `RESULT.md`. A README edited after
+> approval to match reality stops being a plan and becomes a second, tidier RESULT.
 
 ---
 
