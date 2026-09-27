@@ -42,6 +42,12 @@ c. For each pending source:
      Prefer extending an existing article over fragmenting the wiki.
    - Write or update that concept article under `wiki/`: synthesize, don't copy-paste. Cite the
      source back with a relative link into `raw/` (e.g. `[source](../raw/paper.pdf)`).
+   - **Write in the language of the source material**, not the language of this instruction file
+     or of the chat. If sources are mixed, match whichever language dominates this KB's sources so
+     far (check `wiki/sources.md` / existing articles) rather than switching per-source; ask the
+     user once, on the first source, if it's genuinely ambiguous. Keep technical/domain terms,
+     proper nouns, API and library names, and established jargon in their original language even
+     when the surrounding prose is translated — don't force a translation nobody in the field uses.
    - Cross-link related articles with Obsidian-style `[[Article Name]]` links. If a concept
      already has an article in `wiki/_geral/`, link there (`[[_geral/Article Name]]`) instead of
      duplicating it.
@@ -73,7 +79,8 @@ b. **Process pending notes.** Glob `notes/*.md`. A note is *pending* if its fron
      whether it warrants a new one.
    - Write or update that article: synthesize the note's content into it, don't paste it
      verbatim. Cross-link related articles with `[[Article Name]]` (link into `wiki/_geral/`
-     when the concept already lives there).
+     when the concept already lives there). Write in the language the note itself is written in
+     (same rule as research mode) — technical terms stay as-is.
    - Rewrite the note's frontmatter to `status: compiled`, `compiled: <today's date>`, and
      `articles:` listing what it fed. Leave the note's body untouched.
 
@@ -129,3 +136,7 @@ c. **Walk repo activity since the last compile.** Read `last_compiled_at` from `
   own `compile-wiki` run. Read and link to it, don't edit through it.
 - `gh` is optional for code mode: if it's not installed/authenticated or there's no GitHub
   remote, still process notes and git log — don't block the whole run on it.
+- Language is not fixed by this skill or by the English `SKILL.md`/README files of this plugin —
+  those document the tool, not the wiki it produces. The wiki follows the source material (see
+  step 4's language rule); once a KB has settled on one, stay consistent across articles rather
+  than drifting per session.

@@ -49,10 +49,11 @@ References, read them when you reach the matching step:
    writing `README.md`. "cria o README" authorises the *flow*, not the text they have not read yet.
 6. **Never blind-overwrite.** If a `README.md` exists, read it fully first, mine it for facts worth
    keeping, and say in your proposal what you are dropping and why.
-7. **Language.** Write the README in the language the repository already documents itself in — check the
-   existing README, `CLAUDE.md` and `docs/`. Default to **English** for the document body, even when the
-   conversation is in Portuguese, unless the repo's own docs are Portuguese. Keep domain terms, enum
-   labels and UI strings in their original language.
+7. **Language.** Ask the user which language to write the README in — don't default to English or to any
+   other language silently. Check the existing README, `CLAUDE.md` and `docs/` first: if they already
+   document the project consistently in one language, offer that as the suggested option when asking
+   (`AskUserQuestion`), but still confirm rather than assuming. Keep domain terms, enum labels and UI
+   strings in their original language regardless of the answer.
 
 ---
 
