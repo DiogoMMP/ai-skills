@@ -6,6 +6,7 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+.obsidian/
 
 # Node (if any skill ships scripts/tooling)
 node_modules/
