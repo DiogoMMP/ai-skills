@@ -36,7 +36,21 @@ viewer) is just the frontend for viewing it.
    research", "this repo's name"). Used as the title in `wiki/index.md` and `KB_GUIDE.md`. A
    generic placeholder is fine if the user has no topic yet.
 
-4. **Create the structure** under the target directory, branching on mode:
+4. **Research mode only: ask how `raw/` will hold source material.** Don't guess — it changes
+   whether `raw/` ends up as a real folder, a link, or both:
+
+   - **Guardado diretamente** — files get copied/dropped into `raw/` as-is, versioned in this
+     repo, exactly like Karpathy's original design.
+   - **Link para uma pasta existente** — the material already lives elsewhere (a synced Drive
+     folder, another repo, a folder you keep organizing outside git) and `raw/` should point at
+     it instead of duplicating it. Ask for that folder's path.
+   - **Os dois** — `raw/` is a real folder for anything added directly, plus one or more named
+     subfolders that are links to existing external folders. Ask for each external folder's path
+     and a short name to link it under (e.g. `raw/faculdade` → `D:\Faculdade\MEIA`).
+
+   Skip this step entirely in code mode — there's no `raw/` there.
+
+5. **Create the structure** under the target directory, branching on mode:
 
    **research mode:**
 
@@ -54,7 +68,24 @@ viewer) is just the frontend for viewing it.
    └── KB_GUIDE.md
    ```
 
-   - Copy `templates/raw-README.md` → `<target>/raw/README.md`
+   - `raw/`, depending on the answer to step 4:
+     - *Guardado diretamente*: create it as a real folder and copy `templates/raw-README.md` →
+       `<target>/raw/README.md`, exactly as before.
+     - *Link*: create `raw/` itself as a directory link to the given external folder — skip
+       copying `raw-README.md`, there's nothing to explain inside a folder this KB doesn't own.
+       - **Windows**: `New-Item -ItemType Junction -Path "<target>\raw" -Target "<external>"`
+         (PowerShell), or `cmd /c mklink /J "<target>\raw" "<external>"` (via Bash).
+       - **macOS/Linux**: `ln -s "<external>" "<target>/raw"`.
+       Create a `.gitignore` in `<target>` containing `/raw/` — this is the one case where a
+       `.gitignore` is created without being asked, because linked content must never be
+       duplicated into this repo's git history.
+     - *Os dois*: create `raw/` as a real folder with `templates/raw-README.md` copied in, then
+       for each external folder from step 4 create a named link inside it the same way (e.g.
+       `raw/<name>` → `<external>`), and add a `/raw/<name>/` line to `.gitignore` for each one
+       created.
+     Either way, once `raw/` involves a link, append a short note to `KB_GUIDE.md` (after
+     copying it below) recording the external path(s) and that they're git-ignored — mirroring
+     the note added for `wiki/_geral` in step 7.
    - Copy `templates/wiki-README.md` → `<target>/wiki/README.md`
    - Copy `templates/wiki-index.md` → `<target>/wiki/index.md`, replacing `{{TOPIC}}` and
      `{{DATE}}`
@@ -85,9 +116,10 @@ viewer) is just the frontend for viewing it.
 
    Either way: if the target directory is inside a git repo, do not create a `.gitignore` unless
    asked — just leave the `README.md` files as the thing that keeps otherwise-empty folders
-   tracked.
+   tracked. The one exception is a linked `raw/` (step 4, *Link* or *Os dois*): that `.gitignore`
+   is created regardless, per step 5 above.
 
-5. **Code mode only: ask about a domain model.** Ask the user whether the project has a domain
+6. **Code mode only: ask about a domain model.** Ask the user whether the project has a domain
    model worth documenting (e.g. DDD entities, an ORM schema, an ER diagram, a class diagram).
    If yes, ask where it lives — a path to the entity/model files or folder, or a diagram file —
    or a short description if there's nothing to point at yet. Record whatever they give you in
@@ -95,13 +127,13 @@ viewer) is just the frontend for viewing it.
    it empty if they say no). This only needs asking once — `compile-wiki` reads it on every run
    to keep the structure overview current. Skip this step entirely in research mode.
 
-6. **Ask about linking to a general/shared vault.** Ask the user whether this KB should link
+7. **Ask about linking to a general/shared vault.** Ask the user whether this KB should link
    into a general/shared Obsidian vault, so both show up in the same graph. If they decline or
-   don't have one, skip to step 7.
+   don't have one, skip to step 8.
 
    If they want a link:
    - Ask for the path to the general vault.
-   - If nothing exists at that path yet, offer to bootstrap it first by running steps 1–4 of
+   - If nothing exists at that path yet, offer to bootstrap it first by running steps 1–5 of
      this same skill against that path (topic: something like "Geral" or whatever the user calls
      it — research or code mode, whichever fits how they'll use it). Confirm with the user
      before creating it.
@@ -117,7 +149,7 @@ viewer) is just the frontend for viewing it.
      linked, read-only reference into the general vault — content there is maintained by the
      general vault's own compile step, never written to from this project.
 
-7. **Report back**: show the resulting tree, briefly explain each folder for the mode chosen,
+8. **Report back**: show the resulting tree, briefly explain each folder for the mode chosen,
    and point at `KB_GUIDE.md` for the full workflow. If a general-vault link was created,
    mention it too. In code mode, mention that the first `compile-wiki` run will generate
    `wiki/Estrutura.md`, a structure overview kept fresh on every run.
@@ -131,5 +163,8 @@ viewer) is just the frontend for viewing it.
 - Keep source material read-only in spirit: `raw/` (research mode) is never edited by the LLM;
   `notes/` (code mode) has its frontmatter status updated by `compile-wiki` but its written
   content is never rewritten.
+- When `raw/` (or a subfolder of it) is a link rather than a real folder, that's doubly true:
+  never write into it, not even a `README.md` — it's someone else's folder, this KB just reads
+  through it.
 - `wiki/_geral/` (when linked) is likewise read-only from this project's point of view: it's a
   directory link, not a copy, so edits made there would actually land in the general vault.

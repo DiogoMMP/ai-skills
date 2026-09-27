@@ -30,6 +30,8 @@ ai-skills/
 
 ## Skills
 
+As skills da categoria **Knowledge base pessoal** (`knowledge-base`, `compile-wiki`,`capture-note`, `resume`, `wiki-lint`) implementam o fluxo `raw/` → `wiki/` compilado por LLM descrito por [Andrej Karpathy](https://x.com/karpathy/status/2039805659525644595) na nota ["LLM Knowledge Bases"](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — a inspiração original para esta abordagem.
+
 | Skill | Categoria | Resumo | Descrição |
 | :--- | :--- | :--- | :--- |
 | [commit-push](skills/commit-push/SKILL.md) | Git & GitHub | Cria commits (Conventional Commits) e faz push, seguindo GitFlow | Lê o estado do repositório, valida a branch contra o modelo GitFlow (`main`/`develop`/`feature`/`bugfix`/`release`/`hotfix`), agrupa o diff em commits coerentes e mostra a(s) mensagem(ns) propostas no chat, aguardando validação explícita antes de commitar — e pergunta separadamente, só depois, se deve fazer push. Uma issue do GitHub pode ser referenciada (`Refs: #12`) mas nunca é obrigatória. |
