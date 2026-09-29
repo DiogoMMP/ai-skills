@@ -11,8 +11,8 @@ Sets up a personal knowledge base wiki, in one of two modes:
 - **research** — Andrej Karpathy's
   ["LLM Knowledge Bases"](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f)
   setup: heterogeneous external sources land in `raw/`, an LLM incrementally compiles them into
-  `wiki/`. Good when there's a real body of external material to ingest (papers, articles,
-  datasets, repos).
+  `wiki/`, with your own commentary in `notes/`. Good when there's a real body of external
+  material to ingest (papers, articles, datasets, repos).
 - **code** — lighter setup for a personal code repo: no `raw/`. The wiki is built directly from
   your own scratch notes (`notes/`) and the repo's git history via the `compile-wiki` skill.
   Good when you *are* the source material and just want decisions/context to survive past your
@@ -36,6 +36,11 @@ viewer) is just the frontend for viewing it.
    research", "this repo's name"). Used as the title in `wiki/index.md` and `KB_GUIDE.md`. A
    generic placeholder is fine if the user has no topic yet.
 
+   Also ask **which language the wiki should be written in** (e.g. `pt-PT`, `en`) — don't
+   default silently. Record it as `language:` in `KB_GUIDE.md`'s frontmatter (replacing
+   `{{LANGUAGE}}`); `compile-wiki` reads it instead of guessing. Technical terms stay in their
+   original language regardless.
+
 4. **Research mode only: ask how `raw/` will hold source material.** Don't guess — it changes
    whether `raw/` ends up as a real folder, a link, or both:
 
@@ -58,9 +63,12 @@ viewer) is just the frontend for viewing it.
    <target>/
    ├── raw/
    │   └── README.md
+   ├── notes/
+   │   └── README.md
    ├── wiki/
    │   ├── README.md
-   │   └── index.md
+   │   ├── index.md
+   │   └── sources.md
    ├── outputs/
    │   └── README.md
    ├── tools/
@@ -76,22 +84,34 @@ viewer) is just the frontend for viewing it.
        - **Windows**: `New-Item -ItemType Junction -Path "<target>\raw" -Target "<external>"`
          (PowerShell), or `cmd /c mklink /J "<target>\raw" "<external>"` (via Bash).
        - **macOS/Linux**: `ln -s "<external>" "<target>/raw"`.
+       Then list `raw/` to verify the link resolves — if it errors or comes back empty when the
+       external folder isn't, remove the broken link and tell the user the path is wrong; don't
+       report success.
        Create a `.gitignore` in `<target>` containing `/raw/` — this is the one case where a
        `.gitignore` is created without being asked, because linked content must never be
-       duplicated into this repo's git history.
+       duplicated into this repo's git history. Since the file is being created anyway, also add
+       `.obsidian/workspace*.json` and `.obsidian/cache` so Obsidian's local state isn't
+       versioned by accident.
      - *Os dois*: create `raw/` as a real folder with `templates/raw-README.md` copied in, then
        for each external folder from step 4 create a named link inside it the same way (e.g.
        `raw/<name>` → `<external>`), and add a `/raw/<name>/` line to `.gitignore` for each one
-       created.
+       created, verifying each link the same way.
      Either way, once `raw/` involves a link, append a short note to `KB_GUIDE.md` (after
      copying it below) recording the external path(s) and that they're git-ignored — mirroring
      the note added for `wiki/_geral` in step 7.
+   - Copy `templates/research-notes-README.md` → `<target>/notes/README.md` (not the code-mode
+     `notes-README.md`: research notes are thoughts, questions and AI answers about sources, with
+     optional `kind`/`source`/`from` frontmatter). `notes/` is always a real folder in this repo,
+     even when `raw/` is a link: it's where your own notes live, next to (never inside) the
+     external material.
+   - Copy `templates/sources.md` → `<target>/wiki/sources.md`, so the manifest exists from the
+     start.
    - Copy `templates/wiki-README.md` → `<target>/wiki/README.md`
    - Copy `templates/wiki-index.md` → `<target>/wiki/index.md`, replacing `{{TOPIC}}` and
      `{{DATE}}`
    - Copy `templates/outputs-README.md` → `<target>/outputs/README.md`
    - Copy `templates/tools-README.md` → `<target>/tools/README.md`
-   - Copy `templates/KB_GUIDE.md` → `<target>/KB_GUIDE.md`, replacing `{{TOPIC}}` and `{{DATE}}`
+   - Copy `templates/KB_GUIDE.md` → `<target>/KB_GUIDE.md`, replacing `{{TOPIC}}`, `{{LANGUAGE}}` and `{{DATE}}`
      (this template's frontmatter sets `mode: research`)
 
    **code mode:**
@@ -110,7 +130,7 @@ viewer) is just the frontend for viewing it.
    - Copy `templates/code-wiki-index.md` → `<target>/wiki/index.md`, replacing `{{TOPIC}}` and
      `{{DATE}}`
    - Copy `templates/notes-README.md` → `<target>/notes/README.md`
-   - Copy `templates/code-KB_GUIDE.md` → `<target>/KB_GUIDE.md`, replacing `{{TOPIC}}` and
+   - Copy `templates/code-KB_GUIDE.md` → `<target>/KB_GUIDE.md`, replacing `{{TOPIC}}`, `{{LANGUAGE}}` and
      `{{DATE}}` (this template's frontmatter sets `mode: code` and leaves `last_compiled_at`
      and `domain_model` empty — `compile-wiki` fills in the former on its first run)
 
@@ -161,8 +181,9 @@ viewer) is just the frontend for viewing it.
   enhance the knowledge base. Code mode has no `outputs/` — there's no one-off Q&A rendering
   step, so this mostly doesn't come up.
 - Keep source material read-only in spirit: `raw/` (research mode) is never edited by the LLM;
-  `notes/` (code mode) has its frontmatter status updated by `compile-wiki` but its written
-  content is never rewritten.
+  `notes/` (both modes) has its frontmatter status updated by `compile-wiki` but its written
+  content is never rewritten. In research mode `notes/` is the one place for the user's own
+  content, so it stays a real folder even when `raw/` is a link.
 - When `raw/` (or a subfolder of it) is a link rather than a real folder, that's doubly true:
   never write into it, not even a `README.md` — it's someone else's folder, this KB just reads
   through it.

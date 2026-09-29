@@ -1,6 +1,7 @@
 ---
 mode: code
 topic: {{TOPIC}}
+language: {{LANGUAGE}}
 created: {{DATE}}
 last_compiled_at:
 domain_model:

@@ -16,8 +16,11 @@ markdown wiki in `wiki/`, incrementally. Behavior branches on the KB's mode.
    one candidate is found, confirm it with the user before touching anything. If none or several
    are found, ask for the path.
 
-2. **Read `KB_GUIDE.md`'s frontmatter** to get `mode` (`research` or `code`) and `topic`. If the
-   file has no frontmatter, treat it as `research` mode for backward compatibility.
+2. **Read `KB_GUIDE.md`'s frontmatter** to get `mode` (`research` or `code`), `topic` and
+   `language`. If the file has no frontmatter, treat it as `research` mode for backward
+   compatibility. If `language` is set, write every article in it (technical terms stay as-is)
+   and skip the language inference described below; if it's missing (older KBs), fall back to
+   the inference rules and offer to record the choice in `KB_GUIDE.md`.
 
 3. **Load shared context.** Read `wiki/index.md` (current map of content). If `wiki/_geral/`
    exists (a directory link into a general/shared vault), skim its `index.md` too, so you can
@@ -33,7 +36,8 @@ a. Read `wiki/sources.md` if it exists — a manifest of every raw source, a one
 
 b. List every file under `raw/` recursively (skip its `README.md`). A source is *pending* if it
    has no entry in `wiki/sources.md`, or if its mtime is newer than the "last compiled" date
-   recorded there. If nothing is pending, say so and stop.
+   recorded there. If nothing is pending here and step (d) finds no pending notes either, skip
+   ahead to the Deletions check; if that finds nothing too, say so and stop.
 
 c. For each pending source:
    - Read it in full. For very large files, read enough to summarize accurately and note in
@@ -55,6 +59,23 @@ c. For each pending source:
      the bytes.
    - Add/update the source's row in `wiki/sources.md`: path, one-line summary, article(s) it
      feeds, today's date.
+
+d. **Process pending notes** (skip if there's no `notes/` folder). Notes are the user's own
+   thoughts, not external sources, so they aren't tracked in `wiki/sources.md`. Glob
+   `notes/*.md`; a note is *pending* if its frontmatter is missing or doesn't say
+   `status: compiled`. For each pending note:
+   - Read it and fold it into the concept article it relates to (or a new one). If its
+     frontmatter has `source:`, attach it to the article covering that `raw/` file. Mark it as
+     the author's own view rather than something the sources say (e.g. a "Notas pessoais"
+     section, or an inline "(nota minha)"). Cite it with `[nota](../notes/<file>.md)`.
+   - Respect `kind:` — `thought` (default) is the author's view; `question` goes under open
+     questions for that concept; `ai-response` is **unverified**: attribute it to `from:` (e.g.
+     "segundo o ChatGPT") and never state it as fact unless a `raw/` source backs it up, in which
+     case cite that source.
+   - Write in the KB's `language` (or the note's own, if `language` isn't set); technical terms
+     stay as-is.
+   - Rewrite the note's frontmatter to `status: compiled`, `compiled: <today's date>`, and
+     `articles:` listing what it fed. Leave the body untouched.
 
 ### Code mode
 
@@ -113,25 +134,59 @@ c. **Walk repo activity since the last compile.** Read `last_compiled_at` from `
    After processing, set `last_compiled_at` in `KB_GUIDE.md`'s frontmatter to the current UTC
    timestamp.
 
-   If there's nothing new anywhere — no pending notes, no new commits, no new issues/PRs — say
-   so and stop. Don't rewrite the wiki when there's nothing pending.
+   If there's nothing new anywhere — no pending notes, no new commits, no new issues/PRs — and
+   the deletions check below also finds nothing, say so and stop. Don't rewrite the wiki when
+   there's nothing pending.
+
+### Deletions (both modes)
+
+Run this after the mode-specific steps (and even when nothing else is pending): removing a
+source or a note must be reflected in the wiki, not just addition.
+
+a. **Find what's gone.**
+   - Research mode: every row of `wiki/sources.md` whose file no longer exists under `raw/`.
+   - Both modes: every link from `wiki/` articles into `../raw/…` or `../notes/…` whose target
+     no longer exists (this catches deleted notes, which leave no manifest row behind).
+
+b. **Guard against a false alarm.** If `raw/` is a link (or contains one) and it doesn't
+   resolve, or lists as empty while `wiki/sources.md` has many rows, the external folder is
+   probably just unmounted or moved — **stop, report it, and change nothing.** Same if nearly
+   everything looks deleted at once.
+
+c. **Show the user what would change and get a yes before editing**, since this removes wiki
+   content: for each vanished source/note, the articles that cite it. A file that reappears
+   under another name/path is a rename, not a deletion — update the citation instead of
+   dropping the content.
+
+d. **Reconcile each affected article:**
+   - Remove the citation and any statement that only that source/note supported; keep what other
+     sources or notes still back. Never leave a link to a file that doesn't exist.
+   - If that leaves an article with no remaining source or note, propose deleting it (ask; don't
+     delete silently), then remove it from `wiki/index.md` and repoint or remove `[[wikilinks]]`
+     to it from other articles.
+   - Remove the vanished source's row from `wiki/sources.md`.
+
+e. **Code mode extra:** `wiki/Estrutura.md` is regenerated every run so it already drops
+   deleted files; articles that cite a deleted repo path in backticks are only *flagged* in the
+   report (code moves legitimately), not rewritten.
 
 5. **Refresh `wiki/index.md`** once everything pending is processed: make sure every
    concept/article is listed and grouped sensibly, and remove stale entries for articles that no
    longer exist.
 
 6. **Report back**: what was processed (sources/notes/commits/issues/PRs), which articles were
-   created vs. updated, and flag anything skipped (unreadable formats, datasets too large to
+   created vs. updated vs. trimmed or removed because a source/note was deleted, and flag anything skipped (unreadable formats, datasets too large to
    read directly — research mode may need a dedicated tool in `tools/` instead; or issues/PRs
    skipped because `gh` wasn't usable). In code mode, confirm `wiki/Estrutura.md` was refreshed.
 
 ## Notes
 
-- Safe to re-run any time — only what's pending gets touched.
+- Safe to re-run any time — only what's pending (or deleted) gets touched. Deletions are never
+  applied without showing the affected articles and getting a yes first.
 - No RAG/vector DB needed at small-to-medium scale: the index files plus direct reads of
   relevant articles are enough context to work from.
 - Never edit files inside `raw/` (research mode) — it's the append-only source of truth. In
-  code mode, never rewrite a note's body, only its frontmatter status.
+  both modes, never rewrite a note's body, only its frontmatter status.
 - Never write into `wiki/_geral/` — it's a directory link into a general vault maintained by its
   own `compile-wiki` run. Read and link to it, don't edit through it.
 - `gh` is optional for code mode: if it's not installed/authenticated or there's no GitHub

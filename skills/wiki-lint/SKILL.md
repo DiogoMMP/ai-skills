@@ -28,9 +28,10 @@ Reports first, fixes only what the user approves.
    to them.
 
 4. **Check for dangling manifest entries.**
-   - Research mode: rows in `wiki/sources.md` whose listed article(s) no longer exist.
-   - Code mode: notes in `notes/` marked `status: compiled` whose listed `articles:` no longer
-     exist.
+   - Research mode: rows in `wiki/sources.md` whose listed article(s) no longer exist, or whose
+     source file is gone from `raw/`.
+   - Both modes: notes in `notes/` marked `status: compiled` whose listed `articles:` no longer
+     exist, and (research mode) notes whose `source:` points to a `raw/` file that doesn't exist.
 
 5. **Check for stale references (code mode).** For articles that cite a file path (e.g. in
    backticks), spot-check whether that path still exists in the repo (`Glob`). Treat this as a

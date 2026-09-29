@@ -7,7 +7,8 @@ allowed-tools: Write, Read, Glob, Bash(mkdir *), AskUserQuestion
 # Capture note
 
 Frictionless note-taking: write down a thought now, let `compile-wiki` organize it later. This
-is the write side of the `notes/` convention used by the `knowledge-base` skill's code mode.
+is the write side of the `notes/` convention used by the `knowledge-base` skill (both modes: in research mode it holds your own notes and
+reactions alongside `raw/`).
 
 ## Steps
 
@@ -37,6 +38,14 @@ is the write side of the `notes/` convention used by the `knowledge-base` skill'
 
    <the note content, lightly cleaned up but not rewritten>
    ```
+
+   **Research-mode KBs** (`mode: research` in `KB_GUIDE.md`) take three optional extra fields,
+   added only when they're evident from what the user said — don't ask for them:
+   `kind:` (`thought` by default; `ai-response` when the text is pasted from an AI;
+   `question` for something still open), `source:` (the `raw/` file it's about) and `from:`
+   (which AI, for `ai-response`). Paste AI answers verbatim rather than "cleaning them up". If
+   `notes/` has to be created in a research KB, use the wording of
+   `knowledge-base/templates/research-notes-README.md` for its `README.md`.
 
 5. **Confirm** with one line — the note's filename and a note that `compile-wiki` will fold it
    into the wiki later. Don't over-narrate; this should feel instant.

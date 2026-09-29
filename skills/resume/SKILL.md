@@ -33,6 +33,8 @@ base or the repo — this is purely a summary.
    - The most recent rows in `wiki/sources.md` (by date) for what was last ingested.
    - Any files in `raw/` with no corresponding entry in `wiki/sources.md` — unfinished ingest
      work.
+   - Pending notes in `notes/` (files without `status: compiled`), noting any `kind: question`
+     ones as open questions, plus the last few compiled notes for context.
 
 4. **Write the briefing** directly in the response (not to a file): a short paragraph on what
    the project is (from `wiki/index.md` / `Estrutura.md`), then bullet points for open threads

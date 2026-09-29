@@ -1,6 +1,7 @@
 ---
 mode: research
 topic: {{TOPIC}}
+language: {{LANGUAGE}}
 created: {{DATE}}
 ---
 
@@ -13,6 +14,10 @@ Conventions for any LLM session working in this directory. Adapted from Andrej K
 
 - `raw/` — source material (articles, papers, repos, datasets, images). Read-only; never
   edited by the LLM.
+- `notes/` — your own notes (thoughts, questions, answers from other AIs), one file per note
+  with `status: pending`/`compiled` frontmatter and optional `kind`, `source`, `from`.
+  `compile-wiki` folds them into `wiki/` as your view (AI answers as unverified, attributed),
+  distinct from what `raw/` says. Never rewritten by the LLM beyond that frontmatter.
 - `wiki/` — the compiled knowledge base: `.md` files with backlinks, organized by concept.
   LLM-maintained; humans mostly just read it (e.g. in Obsidian).
 - `outputs/` — one-off generated artifacts (Q&A answers, Marp slides, charts). Promote the
@@ -23,7 +28,7 @@ Conventions for any LLM session working in this directory. Adapted from Andrej K
 
 1. **Ingest** — new source material goes into `raw/` as-is (web clips, PDFs, repos, datasets,
    images). Don't summarize or rewrite it on the way in.
-2. **Compile** — incrementally turn `raw/` into `wiki/`: write/update summaries, extract
+2. **Compile** — incrementally turn `raw/` and pending `notes/` into `wiki/`: write/update summaries, extract
    concepts into their own articles, cross-link related articles, keep `wiki/index.md` current
    as a map of content. This is incremental — re-run it as `raw/` grows, don't start from
    scratch each time.
