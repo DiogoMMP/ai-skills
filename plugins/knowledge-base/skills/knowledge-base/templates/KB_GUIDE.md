@@ -21,7 +21,10 @@ Conventions for any LLM session working in this directory. Adapted from Andrej K
 - `wiki/` — the compiled knowledge base: `.md` files with backlinks, organized by concept.
   LLM-maintained; humans mostly just read it (e.g. in Obsidian).
 - `outputs/` — one-off generated artifacts (Q&A answers, Marp slides, charts). Promote the
-  useful ones into `wiki/`.
+  useful ones into `wiki/`. Organised by the same areas as `wiki/` (one folder per course,
+  project or topic; `geral/` for the rest), and indexed in a table in `outputs/README.md`.
+  The folder structure is not fixed: check it before adding anything, and reorganise it when
+  it gets ambiguous.
 - `tools/` — scripts/CLIs that operate on `raw/` and `wiki/` (search, linting, importers).
 
 ## Workflow
@@ -38,7 +41,10 @@ Conventions for any LLM session working in this directory. Adapted from Andrej K
    enough.
 4. **Output** — render answers as markdown, Marp slide decks, or images (e.g. matplotlib) into
    `outputs/` rather than only replying in chat, so results are viewable in Obsidian and
-   reusable later. File genuinely useful outputs back into `wiki/`.
+   reusable later. File genuinely useful outputs back into `wiki/`. Put each output in the
+   folder of the area it belongs to and add a row to the table in `outputs/README.md` (see
+   there for the rules). Look at the current structure first; if it has become ambiguous,
+   reorganise it and update the table.
 5. **Lint** — periodically sweep `wiki/` for inconsistencies, missing data (impute via web
    search where appropriate), and interesting new connections worth turning into their own
    article. Treat this as ongoing maintenance, not a one-time cleanup.

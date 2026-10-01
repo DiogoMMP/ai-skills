@@ -27,5 +27,8 @@ answer from memory. `KB_GUIDE.md` has the full conventions.
 ### Maintenance
 
 The wiki is maintained by the `compile-wiki` skill, not by hand. Don't edit `wiki/` to answer
-a one-off question — put one-off answers in `outputs/`.
+a one-off question — put one-off answers in `outputs/`, in the folder of the area they belong to
+(same areas as `wiki/`), and add a row to the index table in `outputs/README.md`, including
+what it is based on. The structure of `outputs/` is not fixed: look at it before adding
+anything, and reorganise it (updating the table) when it becomes ambiguous.
 <!-- kb:end -->

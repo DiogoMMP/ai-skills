@@ -33,6 +33,12 @@ Reports first, fixes only what the user approves.
    - Both modes: notes in `notes/` marked `status: compiled` whose listed `articles:` no longer
      exist, and (research mode) notes whose `source:` points to a `raw/` file that doesn't exist.
 
+   - Research mode: files under `outputs/` with no row in the table in `outputs/README.md`, and
+     rows pointing to a file that no longer exists. (Skip if the table is absent — older KBs.)
+     Also flag `outputs/` folders that have become ambiguous (many loose files, mixed
+     contexts, a sub-area that `wiki/`/`raw/` now has but `outputs/` doesn't) as candidates to
+     reorganise — the structure isn't fixed.
+
 5. **Check for stale references (code mode).** For articles that cite a file path (e.g. in
    backticks), spot-check whether that path still exists in the repo (`Glob`). Treat this as a
    low-confidence heuristic, not a hard rule — code moves around legitimately — and flag
