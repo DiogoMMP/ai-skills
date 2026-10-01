@@ -73,6 +73,7 @@ viewer) is just the frontend for viewing it.
    │   └── README.md
    ├── tools/
    │   └── README.md
+   ├── AGENTS.md          (step 8)
    └── KB_GUIDE.md
    ```
 
@@ -123,6 +124,7 @@ viewer) is just the frontend for viewing it.
    │   └── index.md
    ├── notes/
    │   └── README.md
+   ├── AGENTS.md          (step 8)
    └── KB_GUIDE.md
    ```
 
@@ -169,8 +171,24 @@ viewer) is just the frontend for viewing it.
      linked, read-only reference into the general vault — content there is maintained by the
      general vault's own compile step, never written to from this project.
 
-8. **Report back**: show the resulting tree, briefly explain each folder for the mode chosen,
-   and point at `KB_GUIDE.md` for the full workflow. If a general-vault link was created,
+8. **Write the agent-instructions file.** `KB_GUIDE.md` only helps an AI that already knows the
+   KB exists; `AGENTS.md` (the cross-tool standard, which Claude Code also reads as a fallback
+   when there is no `CLAUDE.md`) is what makes any AI use it. It must be written at
+   `<target>/AGENTS.md` — or the repo root if `<target>` is a subfolder of a git repo whose
+   root differs, since that's where tools look; confirm the location if it's ambiguous.
+
+   - Take the block from `templates/AGENTS.md` (research) or `templates/code-AGENTS.md` (code),
+     replacing `{{TOPIC}}`, and **translate the prose into the wiki language** chosen in
+     step 3. The block is delimited by `<!-- kb:start -->` / `<!-- kb:end -->`.
+   - **Never overwrite an existing file.** If `AGENTS.md` already exists, append the block (or
+     replace only what's between its own `kb:start`/`kb:end` markers if present). If the
+     repo has a `CLAUDE.md` and no `AGENTS.md`, Claude Code would ignore a new `AGENTS.md`, so
+     ask whether to add an `@AGENTS.md` import line to `CLAUDE.md` (and do so only on a yes).
+   - Show the user the final block before writing it.
+
+9. **Report back**: show the resulting tree, briefly explain each folder for the mode chosen,
+   and point at `KB_GUIDE.md` for the full workflow and `AGENTS.md` as what tells AI tools to
+   ground answers in the wiki. If a general-vault link was created,
    mention it too. In code mode, mention that the first `compile-wiki` run will generate
    `wiki/Estrutura.md`, a structure overview kept fresh on every run.
 
